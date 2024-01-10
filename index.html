@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stamp Card</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+
+        #stampCard {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        #stampButton {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Stamp Card Page</h1>
+
+    <div id="stampCard">Stamps: <span id="stampCount">0</span></div>
+
+    <button id="stampButton">Stamp!</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // ページが読み込まれたら実行されるコード
+
+            // スタンプ数をローカルストレージから取得
+            let stampCount = localStorage.getItem('stampCount') || 0;
+
+            // スタンプ数を表示する要素
+            const stampCountElement = document.getElementById('stampCount');
+
+            // スタンプ数を更新する関数
+            function updateStampCount() {
+                stampCountElement.textContent = stampCount;
+            }
+
+            // スタンプボタンの要素
+            const stampButton = document.getElementById('stampButton');
+
+            // スタンプボタンがクリックされたときの処理
+            stampButton.addEventListener('click', function() {
+                // スタンプ数を増やす
+                stampCount++;
+
+                // スタンプ数をローカルストレージに保存
+                localStorage.setItem('stampCount', stampCount);
+
+                // スタンプ数を表示更新
+                updateStampCount();
+            });
+
+            // 初回表示のためにスタンプ数を表示更新
+            updateStampCount();
+        });
+    </script>
+
+</body>
+</html>
