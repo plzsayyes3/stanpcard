@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Input Validation</title>
+    <title>Camera and Image Embedding</title>
     <style>
         body {
             display: flex;
@@ -15,47 +15,111 @@
         #textInput {
             margin-bottom: 20px;
         }
+
+        .squares-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            width: 300px;
+        }
+
+        .square {
+            width: calc(20% - 10px);
+            height: 50px;
+            background-color: #3498db;
+            margin: 10px;
+            box-sizing: border-box;
+            float: left;
+        }
+
+        .photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
     </style>
 </head>
 <body>
 
-    <!-- 5x4の四角形を生成 -->
-    <div class="square"></div>
-    <div class="square"></div>
-    <div class="square"></div>
-    <div class="square"></div>
-    <div class="square"></div>
-    <div class="square"></div>
-    <div class="square"></div>
-    <div class="square"></div>
-    <div class="square"></div>
-    <div class="square"></div>
-    <div class="square"></div>
-    <div class="square"></div>
-    <div class="square"></div>
-    <div class="square"></div>
-    <div class="square"></div>
-    <div class="square"></div>
+    <div class="squares-container">
+        <!-- 5x4の四角形を生成 -->
+        <div class="square" id="photo1"></div>
+        <div class="square" id="photo2"></div>
+        <div class="square" id="photo3"></div>
+        <div class="square" id="photo4"></div>
+        <div class="square" id="photo5"></div>
+        <div class="square" id="photo6"></div>
+        <div class="square" id="photo7"></div>
+        <div class="square" id="photo8"></div>
+        <div class="square" id="photo9"></div>
+        <div class="square" id="photo10"></div>
+        <div class="square" id="photo11"></div>
+        <div class="square" id="photo12"></div>
+        <div class="square" id="photo13"></div>
+        <div class="square" id="photo14"></div>
+        <div class="square" id="photo15"></div>
+        <div class="square" id="photo16"></div>
+    </div>
 
-    <h1>Input Validation</h1>
+    <h1>Camera and Image Embedding</h1>
 
     <label for="textInput">Text Input:</label>
     <input type="text" id="textInput" placeholder="Enter text...">
 
-    <button onclick="validateInput()">Submit</button>
+    <button onclick="startCamera()">Capture Photo</button>
 
     <script>
-        function validateInput() {
+        async function startCamera() {
             // テキスト入力エリアの値を取得
             const inputValue = document.getElementById('textInput').value;
 
             // 入力が '9999' の場合
             if (inputValue === '9999') {
-                alert('成功');
+                try {
+                    // カメラのキャプチャを要求
+                    const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    const video = document.createElement('video');
+                    document.body.appendChild(video);
+                    video.srcObject = mediaStream;
+
+                    // カメラの映像をキャンバスに描画
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    video.addEventListener('loadeddata', () => {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                        // 画像を圧縮
+                        const compressedImageData = canvas.toDataURL('image/jpeg', 0.5);
+
+                        // 各四角形に写真を埋め込む
+                        embedPhoto('photo1', compressedImageData);
+                        embedPhoto('photo2', compressedImageData);
+                        embedPhoto('photo6', compressedImageData);
+
+                        // カメラのストリームを停止
+                        mediaStream.getTracks().forEach(track => track.stop());
+                        
+                        // ビデオ要素を削除
+                        document.body.removeChild(video);
+                    });
+                } catch (error) {
+                    console.error('Error accessing camera:', error);
+                }
             } else {
                 // それ以外の場合
                 alert('エラー');
             }
+        }
+
+        // 指定されたIDの四角形に写真を埋め込む関数
+        function embedPhoto(squareId, imageData) {
+            const square = document.getElementById(squareId);
+            const photo = new Image();
+            photo.src = imageData;
+            photo.classList.add('photo');
+            square.appendChild(photo);
         }
     </script>
 
