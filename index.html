@@ -4,91 +4,128 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
+    body {
+      background-image: url('https://images.unsplash.com/photo-1470790376778-a9fbc86d70e2?q=80&w=2504&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+      background-size: cover;
+      background-position: center;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      padding: 20px;
+      text-align: center;
+      color: white;
+    }
+
     .square {
-      width: 50px;
-      height: 50px;
-      background-color: lightblue;
+      width: 150px;
+      height: 150px;
+      background-color: rgba(148, 211, 168, 0.838);
+      background-size: cover;
+      background-position: center;
       display: inline-block;
       margin: 5px;
       cursor: pointer;
+      border-radius: 5%;
     }
 
     .selected {
       border: 2px solid red;
     }
 
-    .colored {
-      background-color: green;
-    }
-
     #textInput {
       margin-top: 20px;
     }
+
+    #imageInput {
+      display: none;
+    }
   </style>
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      var squares = document.querySelectorAll('.square');
-      var selectedSquare = null;
+ document.addEventListener("DOMContentLoaded", function () {
+  var squares = document.querySelectorAll('.square');
+  var selectedSquare = null;
 
-      squares.forEach(function (square, index) {
-        square.addEventListener('click', function () {
-          if (selectedSquare) {
-            selectedSquare.classList.remove('selected');
-          }
-          selectedSquare = square;
-          selectedSquare.classList.add('selected');
-        });
+  // Restore saved images on page load
+  squares.forEach(function (square, index) {
+    var savedImage = localStorage.getItem('squareImage' + index);
+    if (savedImage) {
+      square.style.backgroundImage = 'url(' + savedImage + ')';
+    }
 
-        // Check local storage for color information on page load
-        var storedColor = localStorage.getItem('squareColor' + index);
-        if (storedColor) {
-          square.style.backgroundColor = storedColor;
-        }
-      });
-
-      var textInput = document.getElementById('textInput');
-      var saveButton = document.getElementById('saveButton');
-      var resetButton = document.getElementById('resetButton');
-
-      saveButton.addEventListener('click', function () {
-        if (selectedSquare) {
-          var inputValue = textInput.value;
-          if (inputValue === "9999") {
-            selectedSquare.classList.add('colored'); // Add class to indicate color change
-            textInput.value = ''; // Clear text input
-
-            // Store color information in local storage
-            var squareIndex = Array.from(squares).indexOf(selectedSquare);
-            localStorage.setItem('squareColor' + squareIndex, 'green');
-          }
-        }
-      });
-
-      resetButton.addEventListener('click', function () {
-        var inputValue = textInput.value;
-        if (inputValue === "0000") {
-          localStorage.clear(); // Reset local storage
-          alert('ローカルストレージがリセットされました。');
-          // Reset colors on all squares
-          squares.forEach(function (square) {
-            square.style.backgroundColor = 'lightblue';
-          });
-        }
-      });
+    square.addEventListener('click', function () {
+      if (selectedSquare) {
+        selectedSquare.classList.remove('selected');
+      }
+      selectedSquare = square;
+      selectedSquare.classList.add('selected');
     });
-  </script>
+  });
+
+  var textInput = document.getElementById('textInput');
+  var imageInput = document.getElementById('imageInput');
+  var saveButton = document.getElementById('saveButton');
+  var resetButton = document.getElementById('resetButton');
+
+  saveButton.addEventListener('click', function () {
+    if (selectedSquare) {
+      var inputValue = textInput.value;
+      if (inputValue === "9999") {
+        imageInput.click(); // Trigger the hidden file input
+      }
+    }
+  });
+
+  imageInput.addEventListener('change', function () {
+    var file = imageInput.files[0];
+    if (file) {
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        selectedSquare.classList.add('colored'); // Add class to indicate image change
+        textInput.value = ''; // Clear text input
+
+        // Display image in selected square
+        selectedSquare.style.backgroundImage = 'url(' + e.target.result + ')';
+
+        // Save image data to local storage
+        var squareIndex = Array.from(squares).indexOf(selectedSquare);
+        localStorage.setItem('squareImage' + squareIndex, e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  resetButton.addEventListener('click', function () {
+    var inputValue = textInput.value;
+    if (inputValue === "0000") {
+      localStorage.clear(); // Reset local storage
+      alert('ローカルストレージがリセットされました。');
+      // Reset images on all squares
+      squares.forEach(function (square) {
+        square.style.backgroundImage = '';
+      });
+    }
+  });
+});
+
+ </script>
 </head>
 <body>
-  <div class="square"></div>
-  <div class="square"></div>
-  <div class="square"></div>
-  <div class="square"></div>
-  <div class="square"></div>
-
-  <div>
-    <textarea id="textInput" rows="4" cols="50" placeholder="テキストを入力してください"></textarea>
-    <button id="saveButton">保存</button>
-    <button id="resetButton">消去</button>
+  <div class="container">
+    <div class="square"></div>
+    <div class="square"></div>
+    <div class="square"></div>
+    <div class="square"></div>
+    <div class="square"></div>
+<br>
+    <div>
+      <textarea id="textInput" rows="4" cols="50" placeholder="password"></textarea>
+      <br>
+      <button id="saveButton">スタンプ</button><br>
+      <button id="resetButton">reset</button>
+      <input type="file" id="imageInput">
+    </div>
   </div>
 </body>
 </html>
