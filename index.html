@@ -1,127 +1,94 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Camera and Image Embedding</title>
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 50px;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    .square {
+      width: 50px;
+      height: 50px;
+      background-color: lightblue;
+      display: inline-block;
+      margin: 5px;
+      cursor: pointer;
+    }
 
-        #textInput {
-            margin-bottom: 20px;
-        }
+    .selected {
+      border: 2px solid red;
+    }
 
-        .squares-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            width: 300px;
-        }
+    .colored {
+      background-color: green;
+    }
 
-        .square {
-            width: calc(20% - 10px);
-            height: 50px;
-            background-color: #3498db;
-            margin: 10px;
-            box-sizing: border-box;
-            float: left;
-        }
+    #textInput {
+      margin-top: 20px;
+    }
+  </style>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var squares = document.querySelectorAll('.square');
+      var selectedSquare = null;
 
-        .photo {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+      squares.forEach(function (square, index) {
+        square.addEventListener('click', function () {
+          if (selectedSquare) {
+            selectedSquare.classList.remove('selected');
+          }
+          selectedSquare = square;
+          selectedSquare.classList.add('selected');
+        });
+
+        // Check local storage for color information on page load
+        var storedColor = localStorage.getItem('squareColor' + index);
+        if (storedColor) {
+          square.style.backgroundColor = storedColor;
         }
-    </style>
+      });
+
+      var textInput = document.getElementById('textInput');
+      var saveButton = document.getElementById('saveButton');
+      var resetButton = document.getElementById('resetButton');
+
+      saveButton.addEventListener('click', function () {
+        if (selectedSquare) {
+          var inputValue = textInput.value;
+          if (inputValue === "9999") {
+            selectedSquare.classList.add('colored'); // Add class to indicate color change
+            textInput.value = ''; // Clear text input
+
+            // Store color information in local storage
+            var squareIndex = Array.from(squares).indexOf(selectedSquare);
+            localStorage.setItem('squareColor' + squareIndex, 'green');
+          }
+        }
+      });
+
+      resetButton.addEventListener('click', function () {
+        var inputValue = textInput.value;
+        if (inputValue === "0000") {
+          localStorage.clear(); // Reset local storage
+          alert('ローカルストレージがリセットされました。');
+          // Reset colors on all squares
+          squares.forEach(function (square) {
+            square.style.backgroundColor = 'lightblue';
+          });
+        }
+      });
+    });
+  </script>
 </head>
 <body>
+  <div class="square"></div>
+  <div class="square"></div>
+  <div class="square"></div>
+  <div class="square"></div>
+  <div class="square"></div>
 
-    <div class="squares-container">
-        <!-- 5x4の四角形を生成 -->
-        <div class="square" id="photo1"></div>
-        <div class="square" id="photo2"></div>
-        <div class="square" id="photo3"></div>
-        <div class="square" id="photo4"></div>
-        <div class="square" id="photo5"></div>
-        <div class="square" id="photo6"></div>
-        <div class="square" id="photo7"></div>
-        <div class="square" id="photo8"></div>
-        <div class="square" id="photo9"></div>
-        <div class="square" id="photo10"></div>
-        <div class="square" id="photo11"></div>
-        <div class="square" id="photo12"></div>
-        <div class="square" id="photo13"></div>
-        <div class="square" id="photo14"></div>
-        <div class="square" id="photo15"></div>
-        <div class="square" id="photo16"></div>
-    </div>
-
-    <h1>Camera and Image Embedding</h1>
-
-    <label for="textInput">Text Input:</label>
-    <input type="text" id="textInput" placeholder="Enter text...">
-
-    <button onclick="startCamera()">Capture Photo</button>
-
-    <script>
-        async function startCamera() {
-            // テキスト入力エリアの値を取得
-            const inputValue = document.getElementById('textInput').value;
-
-            // 入力が '9999' の場合
-            if (inputValue === '9999') {
-                try {
-                    // カメラのキャプチャを要求
-                    const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
-                    const video = document.createElement('video');
-                    document.body.appendChild(video);
-                    video.srcObject = mediaStream;
-
-                    // カメラの映像をキャンバスに描画
-                    const canvas = document.createElement('canvas');
-                    const context = canvas.getContext('2d');
-                    video.addEventListener('loadeddata', () => {
-                        canvas.width = video.videoWidth;
-                        canvas.height = video.videoHeight;
-                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                        // 画像を圧縮
-                        const compressedImageData = canvas.toDataURL('image/jpeg', 0.5);
-
-                        // 各四角形に写真を埋め込む
-                        embedPhoto('photo1', compressedImageData);
-                        embedPhoto('photo2', compressedImageData);
-                        embedPhoto('photo6', compressedImageData);
-
-                        // カメラのストリームを停止
-                        mediaStream.getTracks().forEach(track => track.stop());
-                        
-                        // ビデオ要素を削除
-                        document.body.removeChild(video);
-                    });
-                } catch (error) {
-                    console.error('Error accessing camera:', error);
-                }
-            } else {
-                // それ以外の場合
-                alert('エラー');
-            }
-        }
-
-        // 指定されたIDの四角形に写真を埋め込む関数
-        function embedPhoto(squareId, imageData) {
-            const square = document.getElementById(squareId);
-            const photo = new Image();
-            photo.src = imageData;
-            photo.classList.add('photo');
-            square.appendChild(photo);
-        }
-    </script>
-
+  <div>
+    <textarea id="textInput" rows="4" cols="50" placeholder="テキストを入力してください"></textarea>
+    <button id="saveButton">保存</button>
+    <button id="resetButton">消去</button>
+  </div>
 </body>
 </html>
