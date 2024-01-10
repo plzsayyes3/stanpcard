@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stamp Card</title>
+    <title>QR Code Scanner</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -11,58 +11,56 @@
             margin: 50px;
         }
 
-        #stampCard {
+        #result {
+            margin-top: 20px;
             font-size: 24px;
-            margin-bottom: 20px;
-        }
-
-        #stampButton {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-    <h1>Stamp Card Page</h1>
+    <h1>QR Code Scanner</h1>
 
-    <div id="stampCard">Stamps: <span id="stampCount">0</span></div>
+    <video id="preview" width="100%" height="auto"></video>
+    <div id="result"></div>
 
-    <button id="stampButton">Stamp!</button>
-
+    <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // ページが読み込まれたら実行されるコード
 
-            // スタンプ数をローカルストレージから取得
-            let stampCount = localStorage.getItem('stampCount') || 0;
+            // カメラのプレビューを表示する要素
+            const preview = document.getElementById('preview');
 
-            // スタンプ数を表示する要素
-            const stampCountElement = document.getElementById('stampCount');
+            // QRコードを読み込んだ結果を表示する要素
+            const resultElement = document.getElementById('result');
 
-            // スタンプ数を更新する関数
-            function updateStampCount() {
-                stampCountElement.textContent = stampCount;
+            // カメラのプレビューを表示する関数
+            function startCamera() {
+                const scanner = new Instascan.Scanner({ video: preview });
+                scanner.addListener('scan', function(content) {
+                    // QRコードを読み込んだときの処理
+                    resultElement.textContent = content;
+
+                    // 特定の数字が読み込まれた場合の処理
+                    if (content === '9999') {
+                        resultElement.textContent = 'OK';
+                    }
+                });
+
+                Instascan.Camera.getCameras().then(function(cameras) {
+                    if (cameras.length > 0) {
+                        scanner.start(cameras[0]);
+                    } else {
+                        console.error('No cameras found.');
+                    }
+                }).catch(function(e) {
+                    console.error(e);
+                });
             }
 
-            // スタンプボタンの要素
-            const stampButton = document.getElementById('stampButton');
-
-            // スタンプボタンがクリックされたときの処理
-            stampButton.addEventListener('click', function() {
-                // スタンプ数を増やす
-                stampCount++;
-
-                // スタンプ数をローカルストレージに保存
-                localStorage.setItem('stampCount', stampCount);
-
-                // スタンプ数を表示更新
-                updateStampCount();
-            });
-
-            // 初回表示のためにスタンプ数を表示更新
-            updateStampCount();
+            // カメラを起動する関数を呼び出し
+            startCamera();
         });
     </script>
 
