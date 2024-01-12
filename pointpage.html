@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>情報表示</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            flex-direction: column;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-image: url(''); /* 初期値は空 */
+        }
+
+        #infoDisplay {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #infoDisplay p {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        #infoDisplay strong {
+            font-size: 24px;
+        }
+
+        #infoDisplay span {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        #settingsButton {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin-top: auto;
+            cursor: pointer;
+            border-radius: 5px;
+            position: fixed;
+            bottom: 20px;
+        }
+
+        #passwordModal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
+            padding-top: 60px;
+        }
+
+        #passwordContent {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            border-radius: 10px;
+        }
+
+        #passwordInput {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            border-radius: 5px;
+        }
+
+        #submitButton {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="infoDisplay">
+        <!-- ローカルストレージから情報を取得して表示 -->
+        <script>
+            var savedInfo = JSON.parse(localStorage.getItem("savedInfo"));
+
+            if (savedInfo) {
+                var name = savedInfo.name;
+                var points = savedInfo.points;
+                document.getElementById("infoDisplay").innerHTML = "<p><span>" + name + "くんの<br>ポイントは<br></span><strong>" + points + "</strong>ポイントです。</p>";
+            } else {
+                document.getElementById("infoDisplay").innerHTML = "<p>情報が保存されていません。</p>";
+            }
+        </script>
+        
+        <button id="settingsButton" onclick="openPasswordModal()"><i class="fas fa-cogs"></i></button>
+
+        <div id="passwordModal">
+            <div id="passwordContent">
+                <span onclick="closePasswordModal()" style="float: right; cursor: pointer;">&times;</span>
+                <p>パスワードを入力してください:</p>
+                <input type="password" id="passwordInput" placeholder="パスワード">
+                <br>
+                <button id="submitButton" onclick="checkPassword()">送信</button>
+            </div>
+        </div>
+
+        <script>
+            function openPasswordModal() {
+                document.getElementById("passwordModal").style.display = "block";
+            }
+
+            function closePasswordModal() {
+                document.getElementById("passwordModal").style.display = "none";
+            }
+
+            function checkPassword() {
+                var passwordInput = document.getElementById("passwordInput").value;
+
+                if (passwordInput === "9999") {
+                    window.location.href = "pt-setting.html";
+                } else {
+                    alert("エラー: 正しいパスワードを入力してください。");
+                }
+            }
+        </script>
+    </div>
+
+    <script>
+        // ローカルストレージから画像データURLを取得
+        var savedImage = localStorage.getItem("savedImage");
+
+        // 画像が保存されていれば背景に設定
+        if (savedImage) {
+            document.body.style.backgroundImage = "url('" + savedImage + "')";
+        }
+    </script>
+
+</body>
+</html>

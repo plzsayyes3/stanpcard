@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>設定画面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            flex-direction: column; /* 縦方向に要素を配置 */
+        }
+
+        #infoForm {
+            margin-bottom: 20px;
+        }
+
+        #infoDisplay {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #infoDisplay p {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        #infoDisplay strong {
+            font-size: 24px;
+        }
+
+        #infoDisplay span {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        #imageForm {
+            margin-top: 20px;
+        }
+
+        #imageInput {
+            margin-right: 10px;
+        }
+
+        #imageDisplay {
+            text-align: center;
+            margin-top: 20px;
+            color: #fff;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <form id="infoForm">
+        <label for="name">名前:</label>
+        <input type="text" id="name" name="name" required>
+        <br><br>
+        <label for="points">ポイント:</label>
+        <input type="number" id="points" name="points" required>
+        <br>
+        <button type="button" onclick="saveInfo()">情報保存</button>
+    </form>
+
+    <div id="infoDisplay">
+        <!-- ローカルストレージから情報を取得して表示 -->
+        <script>
+            var savedInfo = JSON.parse(localStorage.getItem("savedInfo"));
+
+            if (savedInfo) {
+                var name = savedInfo.name;
+                var points = savedInfo.points;
+                document.getElementById("infoDisplay").innerHTML = "<p><span>" + name + "くんの<br>ポイントは<br></span><strong>" + points + "</strong>ポイントです。</p>";
+            } else {
+                document.getElementById("infoDisplay").innerHTML = "<p>情報が保存されていません。</p>";
+            }
+        </script>
+    </div>
+
+    <form id="imageForm">
+        <label for="imageInput">画像を選択して保存:</label>
+        <input type="file" id="imageInput" accept="image/*"><br>
+        <button type="button" onclick="saveImage()">画像保存</button>
+    </form>
+
+
+    <script>
+        function saveInfo() {
+            var name = document.getElementById("name").value;
+            var points = document.getElementById("points").value;
+
+            var info = { name: name, points: points };
+            localStorage.setItem("savedInfo", JSON.stringify(info));
+
+            alert("情報が保存されました: " + name + "くんのポイントは" + points + "ポイントです。");
+        }
+
+        function saveImage() {
+            var input = document.getElementById("imageInput");
+            var file = input.files[0];
+
+            if (file) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    localStorage.setItem("savedImage", e.target.result);
+
+                    var imgElement = document.createElement("img");
+                    imgElement.src = e.target.result;
+                    imgElement.alt = "保存された画像";
+                    document.getElementById("imageDisplay").innerHTML = "";
+                    document.getElementById("imageDisplay").appendChild(imgElement);
+
+                    alert("画像が保存されました。");
+                };
+
+                reader.readAsDataURL(file);
+            } else {
+                alert("画像を選択してください。");
+            }
+        }
+    </script>
+
+</body>
+</html>
