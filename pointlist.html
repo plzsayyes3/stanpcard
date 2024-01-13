@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ポイントノート</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 20px;
+      background-image: url("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAAAAAAAD/4QAuRXhpZgAATU0AKgAAAAgAAkAAAAMAAAABAAQAAEABAAEAA..."); /* ここに Base64 形式の画像データを挿入 */
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      padding: 10px;
+    }
+
+    #pageTitle {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    #name {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    #result {
+      font-size: 20px;
+      margin-bottom: 20px;
+      background-color: rgba(255, 255, 255, 0.8); /* テキスト部分の背景色を白に設定 */
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    #history {
+      font-size: 14px;
+      margin-top: 20px;
+      max-height: 150px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      background-color: rgba(255, 255, 255, 0.8); /* テキスト部分の背景色を白に設定 */
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    .error {
+      color: red;
+    }
+
+    #toggleButton {
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    #resetButton {
+      margin-top: 20px;
+    }
+
+    #ptSettingLink {
+      display: block;
+      margin-top: 10px;
+      text-decoration: none;
+      color: blue;
+    }
+  </style>
+</head>
+<body>
+
+  <h1 id="pageTitle">ポイントノート</h1>
+
+  <div id="name"></div>
+
+  <label for="points">ポイント:</label>
+  <input type="number" id="points" placeholder="ポイントを入力" />
+  <button onclick="promptPasswordAndCalculate()">計算</button>
+
+  <div id="result"></div>
+
+  <div id="history">
+    <h3>計算履歴</h3>
+    <div id="historyListContainer">
+      <ul id="historyList"></ul>
+    </div>
+    <div id="toggleButton">▼ 履歴を表示 ▼</div>
+  </div>
+
+  <a href="pt-setting.html" id="ptSettingLink">pt-setting.html へのリンク</a>
+
+  <button id="resetButton" onclick="promptPasswordAndReset()">ポイントリセット</button>
+
+  <script>
+    // ページ読み込み時にlocalStorageからnameを取得してタイトルにセット
+    document.addEventListener('DOMContentLoaded', function () {
+      const savedInfo = localStorage.getItem('savedInfo');
+      if (savedInfo) {
+        const infoObject = JSON.parse(savedInfo);
+        document.getElementById('pageTitle').textContent = `${infoObject.name}のポイントノート`;
+      } else {
+        document.getElementById('name').textContent = 'データがありません。';
+      }
+    });
+
+
+    function promptPasswordAndCalculate() {
+      const password = prompt('パスワードを入力してください:', '');
+
+      // パスワードが正しいか確認
+      if (password === '9999') {
+        calculate();
+      } else {
+        displayError();
+      }
+    }
+
+    function promptPasswordAndReset() {
+      const password = prompt('パスワードを入力してください:', '');
+
+      // パスワードが正しいか確認
+      if (password === '9999') {
+        resetPoints();
+      } else {
+        displayError();
+      }
+    }
+
+    function displayError() {
+      const historyList = document.getElementById('historyList');
+      const errorItem = document.createElement('li');
+      const currentDate = getCurrentDate();
+      errorItem.textContent = `${currentDate} パスワード入力に失敗しました`;
+      errorItem.classList.add('error');
+      historyList.insertBefore(errorItem, historyList.firstChild);
+
+      // localStorageから計算履歴を取得し、新しいエラーメッセージを追加して再保存
+      const historyData = JSON.parse(localStorage.getItem('calculationHistory')) || [];
+      historyData.unshift({ date: currentDate, errorMessage: 'パスワード入力に失敗しました' });
+      localStorage.setItem('calculationHistory', JSON.stringify(historyData));
+    }
+
+    function getCurrentDate() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = (now.getMonth() + 1).toString().padStart(2, '0');
+      const day = now.getDate().toString().padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function calculate() {
+      // 入力値の取得
+      const pointsInput = document.getElementById('points');
+      const inputPoints = parseFloat(pointsInput.value);
+
+      // 現在のポイントの取得
+      const currentPoints = localStorage.getItem('currentPoints') ? parseFloat(localStorage.getItem('currentPoints')) : 0;
+
+      // 計算結果の表示
+      const resultDiv = document.getElementById('result');
+      let result;
+
+      // localStorageからsavedInfoを取得し、nameを表示
+      const savedInfo = localStorage.getItem('savedInfo');
+      if (savedInfo) {
+        const infoObject = JSON.parse(savedInfo);
+        resultDiv.textContent = `(${infoObject.name})くんは`;
+      }
+
+      if (inputPoints === -1) {
+        result = currentPoints - 1;
+      } else {
+        result = currentPoints + inputPoints;
+      }
+
+      resultDiv.textContent += `${result} ポイントです`;
+
+      // 計算履歴の更新
+      const historyList = document.getElementById('historyList');
+      const historyItem = document.createElement('li');
+      const currentDate = getCurrentDate();
+
+      if (inputPoints === -1) {
+        historyItem.textContent = `${currentDate} (${inputPoints} ポイント)を追加 → 結果: ポイントは付与されませんでした`;
+      } else {
+        historyItem.textContent = `${currentDate} (${inputPoints} ポイント)を追加 → 結果: ${result} ポイント`;
+      }
+
+      historyList.insertBefore(historyItem, historyList.firstChild);
+
+      // localStorageに計算履歴と現在のポイントを保存
+      const historyData = JSON.parse(localStorage.getItem('calculationHistory')) || [];
+      historyData.unshift({ date: currentDate, inputPoints, result });
+      localStorage.setItem('calculationHistory', JSON.stringify(historyData));
+
+      // 入力欄をクリア
+      pointsInput.value = '';
+    }
+
+    function resetPoints() {
+      // ポイントを0にリセット
+      localStorage.setItem('currentPoints', '0');
+      document.getElementById('result').textContent = 'ポイントがリセットされました。';
+    }
+
+    // ページ読み込み時にlocalStorageから計算履歴を取得して表示
+    document.addEventListener('DOMContentLoaded', function () {
+      const resultDiv = document.getElementById('result');
+      const historyList = document.getElementById('historyList');
+      const historyListContainer = document.getElementById('historyListContainer');
+      const toggleButton = document.getElementById('toggleButton');
+
+      const historyData = JSON.parse(localStorage.getItem('calculationHistory')) || [];
+      historyData.forEach(item => {
+        const historyItem = document.createElement('li');
+        if (item.errorMessage) {
+          historyItem.textContent = `${item.date} ${item.errorMessage}`;
+          historyItem.classList.add('error');
+        } else {
+          if (item.inputPoints === -1) {
+            historyItem.textContent = `${item.date} (${item.inputPoints} ポイント)を追加 → 結果: ポイントは付与されませんでした`;
+          } else {
+            historyItem.textContent = `${item.date} (${item.inputPoints} ポイント)を追加 → 結果: ${item.result} ポイント`;
+          }
+        }
+        historyList.appendChild(historyItem);
+      });
+
+      // LocalStorageからデータを取得し、nameを表示
+      const savedInfo = localStorage.getItem('savedInfo');
+      if (savedInfo) {
+        const infoObject = JSON.parse(savedInfo);
+        document.getElementById('name').textContent = `Name: ${infoObject.name}`;
+      } else {
+        document.getElementById('name').textContent = 'データがありません。';
+      }
+
+      // 背景画像の設定
+      const savedImage = localStorage.getItem('savedImage');
+      if (savedImage) {
+        document.body.style.backgroundImage = `url(${savedImage})`;
+      }
+
+      // 履歴表示の初期状態を折りたたまれている状態に設定
+      historyListContainer.style.display = 'none';
+
+      // 履歴表示のトグルボタン
+      toggleButton.addEventListener('click', function () {
+        const isHistoryVisible = historyListContainer.style.display !== 'none';
+        historyListContainer.style.display = isHistoryVisible ? 'none' : 'block';
+        toggleButton.textContent = isHistoryVisible ? '▼ 履歴を表示 ▼' : '▲ 履歴を非表示 ▲';
+      });
+
+      // 最新の計算結果を表示
+      if (historyData.length > 0) {
+        const latestResult = historyData[0];
+        resultDiv.textContent = `${latestResult.date} (${latestResult.inputPoints} ポイント)を追加 → 結果: ${latestResult.result} ポイント`;
+      } else {
+        resultDiv.textContent = '0 ポイント';
+      }
+    });
+  </script>
+
